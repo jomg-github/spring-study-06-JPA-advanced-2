@@ -1,0 +1,35 @@
+package jpabook.jpashop.repository;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jpabook.jpashop.domain.item.Item;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public class ItemRepository {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    public void save(Item item) {
+        if (item.getId() == null) {
+            em.persist(item);
+        } else {
+            em.merge(item);
+        }
+    }
+
+    public List<Item> findAll() {
+        return em.createQuery("select i from Item i", Item.class)
+                .getResultList();
+    }
+
+    public Item findById(Long id) {
+        return em.find(Item.class, id);
+    }
+
+}
