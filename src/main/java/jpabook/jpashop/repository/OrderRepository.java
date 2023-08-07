@@ -7,6 +7,7 @@ import jakarta.persistence.criteria.*;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderSearch;
+import jpabook.jpashop.domain.SimpleOrderDTO;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -92,5 +93,24 @@ public class OrderRepository {
         TypedQuery<Order> query = em.createQuery(cq).setMaxResults(1000);
 
         return query.getResultList();
+    }
+
+    public List<Order> findAllWithMemberDelivery() {
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member" +
+                        " join fetch o.delivery",
+                        Order.class)
+                .getResultList();
+    }
+
+    public List<SimpleOrderDTO> findSimpleOrderDTOs() {
+        return em.createQuery(
+                "select new jpabook.jpashop.domain.SimpleOrderDTO(o.id, m.name, o.orderDate, o.status, d.address) " +
+                        "from Order o" +
+                        " join o.member m" +
+                        " join o.delivery d",
+                        SimpleOrderDTO.class)
+                .getResultList();
     }
 }

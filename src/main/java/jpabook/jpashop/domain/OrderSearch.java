@@ -3,6 +3,7 @@ package jpabook.jpashop.domain;
 import lombok.*;
 
 @Getter @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 public class OrderSearch {
     private String memberName;

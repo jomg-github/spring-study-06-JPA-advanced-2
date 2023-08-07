@@ -61,8 +61,6 @@ public class OrderService {
      * 주문 검색
      */
     public List<Order> search(OrderSearch orderSearch) {
-        List<Order> result = orderRepository.findAllByCriteria(orderSearch);
-        System.out.println("result = " + result);
-        return result;
+        return orderRepository.findAllByJPQL(orderSearch);
     }
 }
