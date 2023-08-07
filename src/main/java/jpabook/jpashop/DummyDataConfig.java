@@ -10,6 +10,9 @@ import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class DummyDataConfig {
@@ -31,26 +34,39 @@ public class DummyDataConfig {
         public void dbInit() {
             Book book1 = createBook("BOOK A", 18000, 1000);
             Book book2 = createBook("BOOK B", 20000, 5000);
+            Book book3 = createBook("BOOK C", 20000, 5000);
+            Book book4 = createBook("BOOK D", 20000, 5000);
+            Book book5 = createBook("BOOK E", 20000, 5000);
+            Book book6 = createBook("BOOK F", 20000, 5000);
+            Book book7 = createBook("BOOK G", 20000, 5000);
+            Book book8 = createBook("BOOK H", 20000, 5000);
+            Book book9 = createBook("BOOK I", 20000, 5000);
+            Book book10 = createBook("BOOK J", 20000, 5000);
 
             Member member1 = createMember("MEMBER A", new Address("경기도", "광교중앙로 145", "00001"));
             Member member2 = createMember("MEMBER B", new Address("경기도", "미사강변중앙로 190", "00002"));
 
             // member1
-            createOrder(member1, book1, book2);
+            createOrder(member1, book1, book2, book3, book4, book5, book6, book7, book8, book9, book10);
+            createOrder(member1, book1, book2, book3, book4, book5, book6, book7, book8, book9, book10);
+            createOrder(member1, book1, book2, book3, book4, book5, book6, book7, book8, book9, book10);
+            createOrder(member1, book1, book2, book3, book4, book5, book6, book7, book8, book9, book10);
 
             // member2
-            createOrder(member2, book2);
+            createOrder(member2, book1, book2);
         }
 
         private void createOrder(Member member, Item... items) {
+            List<OrderItem> orderItems = new ArrayList<>();
+
             for (Item item : items) {
                 Integer count = (int) (Math.random() * (100 - 10) + 1) * 1;
-                OrderItem orderItem = OrderItem.createOrderItem(item, item.getPrice(), count);
-                Delivery delivery = createDelivery(member.getAddress());
-                Order order = Order.createOrder(member, delivery, orderItem);
-                em.persist(order);
+                orderItems.add(OrderItem.createOrderItem(item, item.getPrice(), count));
             }
 
+            Delivery delivery = createDelivery(member.getAddress());
+            Order order = Order.createOrder(member, delivery, orderItems.toArray(new OrderItem[0]));
+            em.persist(order);
         }
 
         private Delivery createDelivery(Address address) {

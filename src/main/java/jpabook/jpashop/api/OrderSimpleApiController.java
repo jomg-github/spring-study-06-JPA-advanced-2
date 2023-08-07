@@ -3,15 +3,11 @@ package jpabook.jpashop.api;
 import jpabook.jpashop.domain.*;
 import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.service.OrderService;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +38,7 @@ public class OrderSimpleApiController {
 
     @GetMapping("/v3/simple-orders")
     public List<SimpleOrderDTO> findOrdersV3() {
-        return orderRepository.findAllWithMemberDelivery().stream()
+        return orderRepository.findAllWithMemberDelivery(0, 100).stream()
                 .map(SimpleOrderDTO::new)
                 .toList();
     }
