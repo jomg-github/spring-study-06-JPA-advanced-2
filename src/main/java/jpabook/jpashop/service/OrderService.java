@@ -60,6 +60,6 @@ public class OrderService {
      * 주문 검색
      */
     public List<Order> search(OrderSearch orderSearch) {
-        return orderRepository.findAllByJPQL(orderSearch);
+        return orderRepository.findAllByQdsl(orderSearch);
     }
 }

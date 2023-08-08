@@ -30,8 +30,8 @@ public class OrderSimpleApiController {
 //    }
 
     @GetMapping("/v2/simple-orders")
-    public List<SimpleOrderDTO> findOrdersV2() {
-        return orderService.search(new OrderSearch()).stream()
+    public List<SimpleOrderDTO> findOrdersV2(OrderSearch orderSearch) {
+        return orderService.search(orderSearch).stream()
                 .map(SimpleOrderDTO::new)
                 .toList();
     }
