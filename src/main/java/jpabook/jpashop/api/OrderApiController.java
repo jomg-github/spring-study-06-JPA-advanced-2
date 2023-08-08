@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,39 +48,31 @@ public class OrderApiController {
                 .toList();
     }
 
-    @Data
-    @NoArgsConstructor
-    public static class OrderDTO {
-        private Long orderId;
-        private String memberName;
-        private LocalDateTime orderDate;
-        private OrderStatus orderStatus;
-        private Address address;
-        private List<OrderItemDTO> orderItems = new ArrayList<>();
-
-        public OrderDTO(Order order) {
-            this.orderId = order.getId();
-            this.memberName = order.getMember().getName();
-            this.orderDate = order.getOrderDate();
-            this.orderStatus = order.getStatus();
-            this.address = order.getDelivery().getAddress();
-            this.orderItems = order.getOrderItems().stream()
-                    .map(OrderItemDTO::new)
-                    .collect(Collectors.toList());
-        }
+    @GetMapping("/v4/orders")
+    public List<OrderDTO> ordersV4() {
+        return orderRepository.findOrderDTOs();
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class OrderItemDTO {
-        private String itemName;
-        private Integer orderPrice;
-        private Integer count;
+    @GetMapping("/v5/orders")
+    public List<OrderDTO> ordersV5() {
+        return orderRepository.findOrderDTOsV2();
+    }
 
-        public OrderItemDTO(OrderItem orderItem) {
-            this.itemName = orderItem.getItem().getName();
-            this.orderPrice = orderItem.getOrderPrice();
-            this.count = orderItem.getCount();
-        }
+    @GetMapping("/v6/orders")
+    public List<OrderDTO> ordersV6() {
+        List<OrderFlatDTO> orderFlatDTOs = orderRepository.findOrderFlatDTOs();
+
+        return orderFlatDTOs.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                o -> new OrderDTO(o.getOrderId(), o.getMemberName(), o.getOrderDate(), o.getOrderStatus(), o.getAddress()),
+                                Collectors.mapping(o -> new OrderItemDTO(o.getOrderId(), o.getItemName(), o.getOrderPrice(), o.getCount()), Collectors.toList())
+                        )
+                )
+                .entrySet()
+                .stream()
+                .map(e -> new OrderDTO(e.getKey().getOrderId(),e.getKey().getMemberName(), e.getKey().getOrderDate(), e.getKey().getOrderStatus(),e.getKey().getAddress(), e.getValue()))
+                .sorted(Comparator.comparing(OrderDTO::getOrderId))
+                .toList();
     }
 }

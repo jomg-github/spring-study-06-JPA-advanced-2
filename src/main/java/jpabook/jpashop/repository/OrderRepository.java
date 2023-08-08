@@ -4,15 +4,15 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
-import jpabook.jpashop.domain.Member;
+import jpabook.jpashop.domain.*;
 import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.domain.OrderSearch;
-import jpabook.jpashop.domain.SimpleOrderDTO;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 public class OrderRepository {
@@ -112,7 +112,8 @@ public class OrderRepository {
                         "from Order o" +
                         " join o.member m" +
                         " join o.delivery d",
-                        SimpleOrderDTO.class)
+                        SimpleOrderDTO.class
+                )
                 .getResultList();
     }
 
@@ -122,8 +123,80 @@ public class OrderRepository {
                         " join fetch o.member m" +
                         " join fetch o.delivery d" +
                         " join fetch o.orderItems oi" +
-                        " join fetch oi.item i"
-                        , Order.class)
+                        " join fetch oi.item i",
+                        Order.class
+                )
+                .getResultList();
+    }
+
+    public List<OrderDTO> findOrderDTOs() {
+        List<OrderDTO> orderDTOs = findOrders();
+
+        orderDTOs.forEach(orderDTO ->
+                orderDTO.setOrderItems(findOrderItems(orderDTO.getOrderId()))
+        );
+
+        return orderDTOs;
+    }
+
+    private List<OrderDTO> findOrders() {
+        return em.createQuery(
+                "select new jpabook.jpashop.domain.OrderDTO(o.id, m.name, o.orderDate, o.status, d.address) " +
+                        " from Order o" +
+                        " join o.member m" +
+                        " join o.delivery d",
+                        OrderDTO.class
+                )
+                .getResultList();
+    }
+
+    private List<OrderItemDTO> findOrderItems(Long orderId) {
+        return em.createQuery(
+                "select new jpabook.jpashop.domain.OrderItemDTO(oi.order.id, i.name, oi.orderPrice, oi.count)" +
+                        " from OrderItem oi" +
+                        " join oi.item i" +
+                        " where oi.order.id = :orderId",
+                        OrderItemDTO.class
+                )
+                .setParameter("orderId", orderId)
+                .getResultList();
+    }
+
+    public List<OrderDTO> findOrderDTOsV2() {
+        List<OrderDTO> orders = findOrders();
+
+        Map<Long, List<OrderItemDTO>> orderItemMap = createOrderItemMap(orders);
+
+        orders.forEach(order -> order.setOrderItems(orderItemMap.get(order.getOrderId())));
+
+        return orders;
+    }
+
+    private Map<Long, List<OrderItemDTO>> createOrderItemMap(List<OrderDTO> orders) {
+        List<OrderItemDTO> orderItems = em.createQuery(
+                        "select new jpabook.jpashop.domain.OrderItemDTO(oi.order.id, i.name, oi.orderPrice, oi.count)" +
+                                " from OrderItem oi" +
+                                " join oi.item i" +
+                                " where oi.order.id in :orderIds",
+                        OrderItemDTO.class
+                )
+                .setParameter("orderIds", orders.stream().map(OrderDTO::getOrderId).toList())
+                .getResultList();
+
+        return orderItems.stream()
+                .collect(Collectors.groupingBy(OrderItemDTO::getOrderId));
+    }
+
+    public List<OrderFlatDTO> findOrderFlatDTOs() {
+        return em.createQuery(
+                "select new jpabook.jpashop.domain.OrderFlatDTO(o.id, m.name, o.orderDate, o.status, d.address, i.name, oi.orderPrice, oi.count)" +
+                        " from Order o" +
+                        " join o.member m" +
+                        " join o.delivery d" +
+                        " join o.orderItems oi" +
+                        " join oi.item i",
+                        OrderFlatDTO.class
+                )
                 .getResultList();
     }
 }
