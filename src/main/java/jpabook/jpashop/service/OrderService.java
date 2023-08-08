@@ -3,10 +3,9 @@ package jpabook.jpashop.service;
 import jpabook.jpashop.domain.*;
 import jpabook.jpashop.domain.item.Item;
 import jpabook.jpashop.repository.ItemRepository;
-import jpabook.jpashop.repository.MemberRepository;
+import jpabook.jpashop.repository.MemberJPARepository;
 import jpabook.jpashop.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +17,7 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final MemberRepository memberRepository;
+    private final MemberJPARepository memberJPARepository;
     private final ItemRepository itemRepository;
 
     /**
@@ -27,7 +26,7 @@ public class OrderService {
     @Transactional
     public Long order(Long memberId, Long itemId, Integer count) {
         // 엔티티 조회
-        Member member = memberRepository.findById(memberId);
+        Member member = memberJPARepository.findById(memberId);
         Item item = itemRepository.findById(itemId);
 
         // 배송정보 생성

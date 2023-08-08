@@ -1,6 +1,7 @@
 package jpabook.jpashop.service;
 
 import jpabook.jpashop.domain.Member;
+import jpabook.jpashop.repository.MemberJPARepository;
 import jpabook.jpashop.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,7 @@ public class MemberService {
      * 회원 단건 조회
      */
     public Member findOne(Long id) {
-        return memberRepository.findById(id);
+        return memberRepository.findById(id).orElseThrow(RuntimeException::new);
     }
 
 }
